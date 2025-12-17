@@ -10,6 +10,7 @@
 #include <qpixmap.h>
 #include <qscreen.h>
 #include <qtransform.h>
+#include <qwindowdefs.h>
 
 class Mate : public QWidget {
 private:
@@ -20,6 +21,9 @@ private:
   QTimer *timer;
   QPoint dragPosition;
   bool isDragging = false;
+
+  int y_velocity = 0;
+  const int gravity = 2;
 
 public:
   Mate(QWidget *parent = nullptr) : QWidget(parent) {
@@ -48,14 +52,30 @@ public:
   }
 
   void updatePosition() {
-    if (isDragging)
+    if (isDragging){
+      y_velocity = 0;
       return;
+    }
+      
 
     QScreen *screen = QGuiApplication::primaryScreen();
+
+    QRect screenRect = screen->availableGeometry();
+
     int screenWidth = screen->geometry().width();
 
+    int screenBottom = screenRect.bottom();
+
+    y_velocity += gravity;
+
     int currentX = this->x();
-    int currentY = this->y();
+    int nextY = this->y() + y_velocity;
+
+    if(nextY + this->height() >= screenBottom){
+      nextY = screenBottom - this->height();
+      
+      y_velocity = -y_velocity * 0.5;
+    }
 
     // screen collision
     if (currentX >= screenWidth - this->width()) {
@@ -67,7 +87,7 @@ public:
       currentSprite = &spriteRight;
     }
 
-    this->move(currentX, currentY);
+    this->move(currentX, nextY);
 
     update();
   }
