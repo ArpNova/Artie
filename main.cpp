@@ -5,15 +5,23 @@
 #include <QScreen>
 #include <QTimer>
 #include <QWidget>
+#include <qaction.h>
+#include <qevent.h>
 #include <qguiapplication.h>
+#include <qmenu.h>
 #include <qnamespace.h>
 #include <qpixmap.h>
 #include <qscreen.h>
+#include <qsize.h>
 #include <qtransform.h>
 #include <qwindowdefs.h>
+#include <QMenu>
+#include <QAction>
+#include <QContextMenuEvent>
 
 class Mate : public QWidget {
 private:
+  QPixmap originalSprite; 
   QPixmap spriteRight;
   QPixmap spriteLeft;
   QPixmap *currentSprite;
@@ -32,14 +40,10 @@ public:
 
     setAttribute(Qt::WA_TranslucentBackground);
 
-    bool success = spriteRight.load("./assets/Eren.png");
+    bool success = originalSprite.load("./assets/Eren.png");
 
     if (success) {
-      spriteLeft = spriteRight.transformed(QTransform().scale(-1, 1));
-
-      currentSprite = &spriteRight;
-
-      resize(spriteRight.size());
+      changeSize(1.0);
     } else {
       resize(100, 100);
     }
@@ -92,6 +96,29 @@ public:
     update();
   }
 
+  void changeSize(float scale){
+    if(originalSprite.isNull())return;
+
+    QSize newSize = originalSprite.size() * scale;
+
+    spriteRight = originalSprite.scaled(newSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    spriteLeft = spriteRight.transformed(QTransform().scale(-1, 1));
+
+    int heightDifference = newSize.height() - this->height();
+    int newY = this->y() - heightDifference;
+
+    resize(newSize);
+    move(this->x(), newY);
+
+    if(currentSprite == &spriteLeft){
+      currentSprite = &spriteLeft;
+    }else{
+      currentSprite = &spriteRight;
+    }
+
+    update();
+  }
+
 protected:
   void mousePressEvent(QMouseEvent *event) override {
     if (event->button() == Qt::LeftButton) {
@@ -111,6 +138,23 @@ protected:
   }
 
   void mouseReleaseEvent(QMouseEvent *event) override { isDragging = false; }
+
+  void contextMenuEvent(QContextMenuEvent *event) override {
+    QMenu menu(this);
+
+    QAction *smallAction = menu.addAction("Small (50%)");
+    QAction *normalAction = menu.addAction("Normal (100%)");
+
+    connect(smallAction, &QAction::triggered, this, [this](){
+      changeSize(0.5);
+    });
+
+    connect(normalAction, &QAction::triggered, this, [this](){
+      changeSize(1.0);
+    });
+
+    menu.exec(event->globalPos());
+  }
 
   void paintEvent(QPaintEvent *event) override {
     QPainter painter(this);
