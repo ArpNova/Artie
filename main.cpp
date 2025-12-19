@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QWidget>
 #include <cmath>
+#include <qaction.h>
 #include <qcolor.h>
 #include <qpainter.h>
 #include <qpixmap.h>
@@ -13,6 +14,12 @@
 
 class Mate : public QWidget {
 private:
+  // windowSize
+  double baseWindowWidth;
+  double baseWindowheight;
+  // Whole character scale
+  double characterScale = 1.0;
+
   // Sprites
   QPixmap bodySprite;
   QPixmap headSprite;
@@ -53,12 +60,16 @@ public:
                    Qt::Tool);
 
     setAttribute(Qt::WA_TranslucentBackground);
-    setFixedSize(150, 200);
 
     bodySprite.load("./assets/body.png");
     headSprite.load("./assets/head.png");
     armSprite.load("./assets/arm.png");
     legSprite.load("./assets/arm.png");
+
+    baseWindowWidth = armSprite.height() * 1.5;
+    baseWindowheight =
+        legSprite.height() + bodySprite.height() + headSprite.height() - 1.5;
+    setFixedSize(baseWindowWidth, baseWindowheight);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Mate::tick);
@@ -111,6 +122,13 @@ private:
     legAngleRight = std::sin(time) * 10;
   }
 
+  void updateWindowSize() {
+    int baseWidth = baseWindowWidth;
+    int baseHeight = baseWindowheight;
+
+    setFixedSize(baseWidth * characterScale, baseHeight * characterScale);
+  }
+
 protected:
   // Mouse
   void mousePressEvent(QMouseEvent *event) override {
@@ -132,12 +150,33 @@ protected:
 
   // Context Menu
   void contextMenuEvent(QContextMenuEvent *event) override {
+
     QMenu menu(this);
+
+    QAction *smallMate = menu.addAction("Small Mate");
+    QAction *normalMate = menu.addAction("Normal Mate");
+    QAction *largeMate = menu.addAction("Large Mate");
+    menu.addSeparator();
+
+    connect(smallMate, &QAction::triggered, this, [&]() {
+      characterScale = 0.7;
+      updateWindowSize();
+    });
+
+    connect(normalMate, &QAction::triggered, this, [&]() {
+      characterScale = 1.0;
+      updateWindowSize();
+    });
+
+    connect(largeMate, &QAction::triggered, this, [&]() {
+      characterScale = 1.3;
+      updateWindowSize();
+    });
 
     QAction *thinArms = menu.addAction("Thin Arms");
     QAction *thickArms = menu.addAction("Thick Arms");
     QAction *redArms = menu.addAction("Red Arms");
-    QAction *normalArms = menu.addAction("Normal Arms");
+    
 
     connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
 
@@ -146,11 +185,7 @@ protected:
     connect(redArms, &QAction::triggered, this,
             [&]() { armColor = QColor(180, 60, 60); });
 
-    connect(normalArms, &QAction::triggered, this, [&]() {
-      armScaleX = 1.0;
-      armScaleY = 1.2;
-      armColor = QColor(220, 180, 140);
-    });
+    
 
     menu.exec(event->globalPos());
   }
@@ -160,6 +195,9 @@ protected:
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    painter.save();
+    painter.scale(characterScale, characterScale);
 
     int bodyX = (width() - bodySprite.width()) / 2;
     int bodyY = 80 + static_cast<int>(breathOffset);
@@ -195,6 +233,8 @@ protected:
 
     drawArm(painter, QPoint(bodyX + bodySprite.width() - 12, bodyY + 20),
             armAngleLeft, coloredArm, true);
+
+    painter.restore();
   }
 
   void drawArm(QPainter &painter, const QPoint &shoulder, double angle,
