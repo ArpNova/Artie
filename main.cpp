@@ -179,7 +179,8 @@ protected:
              legScaleY);
 
     // Body
-    painter.drawPixmap(bodyX, bodyY, bodySprite);
+    QPixmap coloredBody = tintPixmap(bodySprite, armColor);
+    painter.drawPixmap(bodyX, bodyY, coloredBody);
 
     // Head
     int headX = bodyX + (bodySprite.width() - headSprite.width()) / 2;
