@@ -1,50 +1,39 @@
 #include <QApplication>
-#include <QGuiApplication>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScreen>
 #include <QTimer>
 #include <QWidget>
 #include <cmath>
-#include <qaction.h>
-#include <qevent.h>
-#include <qguiapplication.h>
-#include <qmenu.h>
-#include <qnamespace.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qscreen.h>
-#include <qsize.h>
-#include <qtransform.h>
-#include <qwindowdefs.h>
-#include <QMenu>
-#include <QAction>
-#include <QContextMenuEvent>
-#include <math.h>
 
 class Mate : public QWidget {
 private:
-  QPixmap originalSprite; 
-  QPixmap spriteRight;
-  QPixmap spriteLeft;
-  QPixmap *currentSprite;
+  // Sprites
+  QPixmap bodySprite;
+  QPixmap headSprite;
+  QPixmap armSprite;
 
-  QPixmap bodySprite, headSprite, armSprite;
-
-  //Animation state
+  // Animation state
   double time = 0.0;
-
-  //physics output
   double breathOffset = 0.0;
-  double armAngle = 0.0;
+  double armAngleRight = 0.0;
+  double armAngleLeft = 0.0;
 
+  // Arm appearance
+  double armScaleX = 0.8;
+  double armScaleY = 0.54;
+  QColor armColor = QColor(220, 180, 140);
+
+  // Physics
+  int yVelocity = 0;
+  const int gravity = 2;
+
+  // Dragging
+  bool isDragging = false;
+  QPoint dragOffset;
 
   QTimer *timer;
-  QPoint dragPosition;
-  bool isDragging = false;
-
-  int y_velocity = 0;
-  const int gravity = 2;
 
 public:
   Mate(QWidget *parent = nullptr) : QWidget(parent) {
@@ -52,178 +41,149 @@ public:
                    Qt::Tool);
 
     setAttribute(Qt::WA_TranslucentBackground);
+    setFixedSize(150, 200);
 
     bodySprite.load("./assets/body.png");
     headSprite.load("./assets/head.png");
     armSprite.load("./assets/arm.png");
 
-    int canvasWidth = 150;
-    int canvasHeight = 200;
-
-    setFixedSize(canvasWidth, canvasHeight);
-    // bool success = originalSprite.load("./assets/Eren.png");
-
-    // if (success) {
-    //   changeSize(1.0);
-    // } else {
-    //   resize(100, 100);
-    // }
-
     timer = new QTimer(this);
-
-    connect(timer, &QTimer::timeout, this, &Mate::updatePosition);
-
+    connect(timer, &QTimer::timeout, this, &Mate::tick);
     timer->start(30);
   }
 
-  void updatePosition() {
-    if (isDragging){
-      y_velocity = 0;
-      return;
+private:
+  // Utility
+  QPixmap tintPixmap(const QPixmap &src, const QColor &color) {
+    QPixmap result(src.size());
+    result.fill(Qt::transparent);
+
+    QPainter p(&result);
+    p.drawPixmap(0, 0, src);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(result.rect(), color);
+    return result;
+  }
+
+  // Update Loop
+  void tick() {
+    if (!isDragging) {
+      applyPhysics();
     }
-      
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-
-    QRect screenRect = screen->availableGeometry();
-
-    int screenWidth = screen->geometry().width();
-
-    int screenBottom = screenRect.bottom();
-
-    y_velocity += gravity;
-
-    int currentX = this->x();
-    int nextY = this->y() + y_velocity;
-
-    if(nextY + this->height() >= screenBottom){
-      nextY = screenBottom - this->height();
-      
-      y_velocity = -y_velocity * 0.5;
-    }
-
-    time += 0.1;
-
-    breathOffset = std::sin(time * 2.0) * 2.0;
-    armAngle = std::sin(time) * 5.0;
-
-    update();
-
-    // screen collision
-    if (currentX >= screenWidth - this->width()) {
-
-      currentSprite = &spriteLeft;
-    }
-    if (currentX <= 0) {
-
-      currentSprite = &spriteRight;
-    }
-
-    this->move(currentX, nextY);
-
+    updateAnimation();
     update();
   }
 
-  void changeSize(float scale){
-    if(originalSprite.isNull())return;
+  void applyPhysics() {
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect bounds = screen->availableGeometry();
 
-    QSize newSize = originalSprite.size() * scale;
+    yVelocity += gravity;
+    int nextY = y() + yVelocity;
 
-    spriteRight = originalSprite.scaled(newSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    spriteLeft = spriteRight.transformed(QTransform().scale(-1, 1));
-
-    int heightDifference = newSize.height() - this->height();
-    int newY = this->y() - heightDifference;
-
-    resize(newSize);
-    move(this->x(), newY);
-
-    if(currentSprite == &spriteLeft){
-      currentSprite = &spriteLeft;
-    }else{
-      currentSprite = &spriteRight;
+    if (nextY + height() >= bounds.bottom()) {
+      nextY = bounds.bottom() - height();
+      yVelocity = -yVelocity * 0.5;
     }
 
-    update();
+    move(x(), nextY);
+  }
+
+  void updateAnimation() {
+    time += 0.1;
+    breathOffset = std::sin(time * 2.0) * 2.0;
+    armAngleRight = std::sin(time) * 18.0;
+    armAngleLeft = -std::sin(time) * 18.0;
   }
 
 protected:
+  // Mouse
   void mousePressEvent(QMouseEvent *event) override {
     if (event->button() == Qt::LeftButton) {
       isDragging = true;
-
-      dragPosition =
+      yVelocity = 0;
+      dragOffset =
           event->globalPosition().toPoint() - frameGeometry().topLeft();
-      event->accept();
     }
   }
 
   void mouseMoveEvent(QMouseEvent *event) override {
-    if (event->buttons() & Qt::LeftButton && isDragging) {
-      move(event->globalPosition().toPoint() - dragPosition);
-      event->accept();
+    if (isDragging) {
+      move(event->globalPosition().toPoint() - dragOffset);
     }
   }
 
-  void mouseReleaseEvent(QMouseEvent *event) override { isDragging = false; }
+  void mouseReleaseEvent(QMouseEvent *) override { isDragging = false; }
 
+  // Context Menu
   void contextMenuEvent(QContextMenuEvent *event) override {
     QMenu menu(this);
 
-    QAction *smallAction = menu.addAction("Small (50%)");
-    QAction *normalAction = menu.addAction("Normal (100%)");
+    QAction *thinArms = menu.addAction("Thin Arms");
+    QAction *thickArms = menu.addAction("Thick Arms");
+    QAction *redArms = menu.addAction("Red Arms");
+    QAction *normalArms = menu.addAction("Normal Arms");
 
-    connect(smallAction, &QAction::triggered, this, [this](){
-      changeSize(0.5);
-    });
+    connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
 
-    connect(normalAction, &QAction::triggered, this, [this](){
-      changeSize(1.0);
+    connect(thickArms, &QAction::triggered, this, [&]() { armScaleX = 1.3; });
+
+    connect(redArms, &QAction::triggered, this,
+            [&]() { armColor = QColor(180, 60, 60); });
+
+    connect(normalArms, &QAction::triggered, this, [&]() {
+      armScaleX = 1.0;
+      armScaleY = 1.2;
+      armColor = QColor(220, 180, 140);
     });
 
     menu.exec(event->globalPos());
   }
 
-  void paintEvent(QPaintEvent *event) override {
+  // Rendering
+  void paintEvent(QPaintEvent *) override {
     QPainter painter(this);
-
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
-    //draw
-    int bodyX = (this->width() - bodySprite.width()) / 2;
-    int bodyY = 80;
-    bodyY += (int)breathOffset;
+    int bodyX = (width() - bodySprite.width()) / 2;
+    int bodyY = 80 + static_cast<int>(breathOffset);
 
+    // Body
     painter.drawPixmap(bodyX, bodyY, bodySprite);
 
-    int neckX = bodyX + (bodySprite.width() / 2) - (headSprite.width() / 2);
-    int neckY = bodyY - (headSprite.height() / 2);
+    // Head
+    int headX = bodyX + (bodySprite.width() - headSprite.width()) / 2;
+    int headY = bodyY - headSprite.height() / 2;
+    painter.drawPixmap(headX, headY, headSprite);
 
-    painter.drawPixmap(neckX, neckY, headSprite);
+    // Arms
+    QPixmap coloredArm = tintPixmap(armSprite, armColor);
+
+    drawArm(painter, QPoint(bodyX + 12, bodyY + 20), armAngleRight, coloredArm,
+            false);
+
+    drawArm(painter, QPoint(bodyX + bodySprite.width() - 12, bodyY + 20),
+            armAngleLeft, coloredArm, true);
+  }
+
+  void drawArm(QPainter &painter, const QPoint &shoulder, double angle,
+               const QPixmap &arm, bool flip) {
 
     painter.save();
+    painter.translate(shoulder);
+    painter.rotate(angle);
+    painter.scale(flip ? -armScaleX : armScaleX, armScaleY);
 
-    painter.translate(bodyX + 9, bodyY + 19);
-
-    painter.rotate(armAngle);
-
-    painter.drawPixmap(-armSprite.width()/2, 0, armSprite);
-
+    painter.drawPixmap(-arm.width() / 2, 0, arm);
     painter.restore();
- 
-    // if (currentSprite) {
-    //   painter.drawPixmap(0, 0, *currentSprite);
-    // }
   }
 };
 
+// Main
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
-
-  Mate myMate;
-
-  myMate.show();
-
+  Mate mate;
+  mate.show();
   return app.exec();
 }
