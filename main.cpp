@@ -11,12 +11,33 @@
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <qpoint.h>
+#include <qscreen.h>
+#include <qwindowdefs.h>
 
 class Mate : public QWidget {
 private:
   // windowSize
   double baseWindowWidth;
   double baseWindowheight;
+
+  //State
+  enum MateState{
+    Falling,
+    OnGround,
+    Dragged
+  };
+
+  MateState state = Falling;
+
+  //Horizontal Movement
+  int  xVelocity = 0;
+  int walkDirection = 0;
+  int walkSpeed = 2;
+
+  // AI Timing
+  int decisionTimer = 0;
+  int decisionInterval = 120;
+
   // Whole character scale
   double characterScale = 1.0;
 
@@ -91,9 +112,27 @@ private:
 
   // Update Loop
   void tick() {
-    if (!isDragging) {
+    if (state != Dragged) {
       applyPhysics();
+      updateAI();
+      move(x() + xVelocity, y());
+
+      QScreen *screen = QGuiApplication::primaryScreen();
+      QRect screenRect = screen->availableGeometry();
+
+      if(x() <= screenRect.left()){
+        move(screenRect.left(), y());
+        walkDirection = 1;
+        xVelocity = walkSpeed;
+      }
+
+      if(x() + width() >= screenRect.right()){
+        move(screenRect.right() - width(), y());
+        walkDirection = -1;
+        xVelocity = -walkSpeed;
+      }
     }
+
     updateAnimation();
     update();
   }
@@ -107,7 +146,10 @@ private:
 
     if (nextY + height() >= bounds.bottom()) {
       nextY = bounds.bottom() - height();
-      yVelocity = -yVelocity * 0.5;
+      yVelocity = 0;
+      state = OnGround;
+    }else{
+      state = Falling;
     }
 
     move(x(), nextY);
@@ -116,10 +158,17 @@ private:
   void updateAnimation() {
     time += 0.1;
     breathOffset = std::sin(time * 2.0) * 2.0;
-    armAngleRight = std::sin(time) * 18.0;
-    armAngleLeft = -std::sin(time) * 18.0;
-    legAngleLeft = -std::sin(time) * 10;
-    legAngleRight = std::sin(time) * 10;
+    
+    if(state == Dragged){
+      legAngleLeft = 0;
+      legAngleRight = 0;
+    }else if(state == OnGround && walkDirection != 0){
+      legAngleLeft = -std::sin(time * 2.0) * 15;
+      legAngleRight = std::sin(time * 2.0) * 15;
+    }else{
+      legAngleRight = 0;
+      legAngleLeft = 0;
+    }
   }
 
   void updateWindowSize() {
@@ -129,14 +178,27 @@ private:
     setFixedSize(baseWidth * characterScale, baseHeight * characterScale);
   }
 
+  void updateAI(){
+    if(state != OnGround)return;
+
+    decisionTimer++;
+
+    if(decisionTimer >= decisionInterval){
+      decisionTimer = 0;
+
+      walkDirection = (std::rand() % 3) -1;
+      xVelocity = walkDirection * walkSpeed;
+    }
+  }
+
 protected:
   // Mouse
   void mousePressEvent(QMouseEvent *event) override {
     if (event->button() == Qt::LeftButton) {
       isDragging = true;
+      state = Dragged;
+      xVelocity = 0;
       yVelocity = 0;
-      dragOffset =
-          event->globalPosition().toPoint() - frameGeometry().topLeft();
     }
   }
 
@@ -146,7 +208,10 @@ protected:
     }
   }
 
-  void mouseReleaseEvent(QMouseEvent *) override { isDragging = false; }
+  void mouseReleaseEvent(QMouseEvent *) override { 
+    isDragging = false;
+    state = Falling;
+  }
 
   // Context Menu
   void contextMenuEvent(QContextMenuEvent *event) override {
