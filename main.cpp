@@ -6,6 +6,10 @@
 #include <QTimer>
 #include <QWidget>
 #include <cmath>
+#include <qcolor.h>
+#include <qpainter.h>
+#include <qpixmap.h>
+#include <qpoint.h>
 
 class Mate : public QWidget {
 private:
@@ -13,17 +17,25 @@ private:
   QPixmap bodySprite;
   QPixmap headSprite;
   QPixmap armSprite;
+  QPixmap legSprite;
 
   // Animation state
   double time = 0.0;
   double breathOffset = 0.0;
   double armAngleRight = 0.0;
   double armAngleLeft = 0.0;
+  double legAngleLeft = 0.0;
+  double legAngleRight = 0.0;
 
   // Arm appearance
   double armScaleX = 0.8;
   double armScaleY = 0.54;
   QColor armColor = QColor(220, 180, 140);
+
+  //leg appearence
+  double legScaleX = 0.8;
+  double legScaleY = 0.6;
+  QColor legColor = QColor(220,180,140);
 
   // Physics
   int yVelocity = 0;
@@ -46,6 +58,7 @@ public:
     bodySprite.load("./assets/body.png");
     headSprite.load("./assets/head.png");
     armSprite.load("./assets/arm.png");
+    legSprite.load("./assets/arm.png");
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Mate::tick);
@@ -94,6 +107,8 @@ private:
     breathOffset = std::sin(time * 2.0) * 2.0;
     armAngleRight = std::sin(time) * 18.0;
     armAngleLeft = -std::sin(time) * 18.0;
+    legAngleLeft = -std::sin(time) * 10;
+    legAngleRight = std::sin(time) * 10;
   }
 
 protected:
@@ -149,6 +164,24 @@ protected:
     int bodyX = (width() - bodySprite.width()) / 2;
     int bodyY = 80 + static_cast<int>(breathOffset);
 
+    int bodyBottomY = bodyY + bodySprite.height();
+
+    //LEG JOINTS
+    QPoint leftHip(
+      bodyX + bodySprite.width() * 0.45,
+      bodyBottomY
+    );
+
+    QPoint rightHip(
+      bodyX + bodySprite.width() * 0.55,
+      bodyBottomY
+    );
+
+    QPixmap coloredLimb = tintPixmap(armSprite, armColor);
+
+    drawLimb(painter, leftHip, legAngleRight, coloredLimb, false, legScaleX, legScaleY);
+    drawLimb(painter, leftHip, legAngleLeft, coloredLimb, true, legScaleX, legScaleY);
+
     // Body
     painter.drawPixmap(bodyX, bodyY, bodySprite);
 
@@ -165,6 +198,8 @@ protected:
 
     drawArm(painter, QPoint(bodyX + bodySprite.width() - 12, bodyY + 20),
             armAngleLeft, coloredArm, true);
+
+    
   }
 
   void drawArm(QPainter &painter, const QPoint &shoulder, double angle,
@@ -176,6 +211,23 @@ protected:
     painter.scale(flip ? -armScaleX : armScaleX, armScaleY);
 
     painter.drawPixmap(-arm.width() / 2, 0, arm);
+    painter.restore();
+  }
+
+  void drawLimb(QPainter &painter, 
+                const QPoint &joint, 
+                double angle, 
+                const QPixmap &limb,
+                bool flip,
+                double scaleX,
+                double scaleY){
+        
+    painter.save();
+    painter.translate(joint);
+    painter.rotate(angle);
+    painter.scale(flip ? -scaleX : scaleX, scaleY);
+
+    painter.drawPixmap(-limb.width() / 2, 0, limb);
     painter.restore();
   }
 };
