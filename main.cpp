@@ -32,10 +32,10 @@ private:
   double armScaleY = 0.54;
   QColor armColor = QColor(220, 180, 140);
 
-  //leg appearence
+  // leg appearence
   double legScaleX = 0.8;
   double legScaleY = 0.6;
-  QColor legColor = QColor(220,180,140);
+  QColor legColor = QColor(220, 180, 140);
 
   // Physics
   int yVelocity = 0;
@@ -166,21 +166,17 @@ protected:
 
     int bodyBottomY = bodyY + bodySprite.height();
 
-    //LEG JOINTS
-    QPoint leftHip(
-      bodyX + bodySprite.width() * 0.45,
-      bodyBottomY
-    );
+    // LEG JOINTS
+    QPoint leftHip(bodyX + bodySprite.width() * 0.45, bodyBottomY);
 
-    QPoint rightHip(
-      bodyX + bodySprite.width() * 0.55,
-      bodyBottomY
-    );
+    QPoint rightHip(bodyX + bodySprite.width() * 0.55, bodyBottomY);
 
     QPixmap coloredLimb = tintPixmap(armSprite, armColor);
 
-    drawLimb(painter, leftHip, legAngleRight, coloredLimb, false, legScaleX, legScaleY);
-    drawLimb(painter, leftHip, legAngleLeft, coloredLimb, true, legScaleX, legScaleY);
+    drawLimb(painter, leftHip, legAngleRight, coloredLimb, false, legScaleX,
+             legScaleY);
+    drawLimb(painter, leftHip, legAngleLeft, coloredLimb, true, legScaleX,
+             legScaleY);
 
     // Body
     painter.drawPixmap(bodyX, bodyY, bodySprite);
@@ -198,8 +194,6 @@ protected:
 
     drawArm(painter, QPoint(bodyX + bodySprite.width() - 12, bodyY + 20),
             armAngleLeft, coloredArm, true);
-
-    
   }
 
   void drawArm(QPainter &painter, const QPoint &shoulder, double angle,
@@ -214,14 +208,9 @@ protected:
     painter.restore();
   }
 
-  void drawLimb(QPainter &painter, 
-                const QPoint &joint, 
-                double angle, 
-                const QPixmap &limb,
-                bool flip,
-                double scaleX,
-                double scaleY){
-        
+  void drawLimb(QPainter &painter, const QPoint &joint, double angle,
+                const QPixmap &limb, bool flip, double scaleX, double scaleY) {
+
     painter.save();
     painter.translate(joint);
     painter.rotate(angle);
