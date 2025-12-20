@@ -8,6 +8,8 @@
 #include <cmath>
 #include <qaction.h>
 #include <qcolor.h>
+#include <qevent.h>
+#include <qnamespace.h>
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <qpoint.h>
@@ -20,23 +22,26 @@ private:
   double baseWindowWidth;
   double baseWindowheight;
 
-  //State
-  enum MateState{
-    Falling,
-    OnGround,
-    Dragged
-  };
+  // State
+  enum MateState { Falling, OnGround, Dragged };
 
   MateState state = Falling;
 
-  //Horizontal Movement
-  int  xVelocity = 0;
+  // Horizontal Movement
+  int xVelocity = 0;
   int walkDirection = 0;
   int walkSpeed = 2;
 
   // AI Timing
   int decisionTimer = 0;
   int decisionInterval = 120;
+
+  // Gesture: Wave
+  bool isWaving = false;
+  int waveTimer = 0;
+  int waveDuration = 60;
+  int waveCoolDown = 0;
+  int waveCoolDownMax = 300;
 
   // Whole character scale
   double characterScale = 1.0;
@@ -82,6 +87,9 @@ public:
 
     setAttribute(Qt::WA_TranslucentBackground);
 
+    setFocusPolicy(Qt::StrongFocus);
+    setFocus();
+
     bodySprite.load("./assets/body.png");
     headSprite.load("./assets/head.png");
     armSprite.load("./assets/arm.png");
@@ -115,24 +123,27 @@ private:
     if (state != Dragged) {
       applyPhysics();
       updateAI();
+      updateIdleGestures();
+      updateWaveAnimation();
       move(x() + xVelocity, y());
 
       QScreen *screen = QGuiApplication::primaryScreen();
       QRect screenRect = screen->availableGeometry();
 
-      if(x() <= screenRect.left()){
+      if (x() <= screenRect.left()) {
         move(screenRect.left(), y());
         walkDirection = 1;
         xVelocity = walkSpeed;
       }
 
-      if(x() + width() >= screenRect.right()){
+      if (x() + width() >= screenRect.right()) {
         move(screenRect.right() - width(), y());
         walkDirection = -1;
         xVelocity = -walkSpeed;
       }
     }
 
+    
     updateAnimation();
     update();
   }
@@ -148,7 +159,7 @@ private:
       nextY = bounds.bottom() - height();
       yVelocity = 0;
       state = OnGround;
-    }else{
+    } else {
       state = Falling;
     }
 
@@ -158,24 +169,30 @@ private:
   void updateAnimation() {
     time += 0.1;
     breathOffset = std::sin(time * 2.0) * 2.0;
-    
-    if(state == Dragged){
+
+    if(!isWaving){
+      armAngleLeft = -std::sin(time) * 18.0;
+    }
+
+    if (state == Dragged) {
       legAngleLeft = 0;
       legAngleRight = 0;
 
       armAngleRight = 0;
       armAngleLeft = 0;
-    }else if(state == OnGround && walkDirection != 0){
+    } else if (state == OnGround && walkDirection != 0) {
       legAngleLeft = -std::sin(time * 2.0) * 15;
       legAngleRight = std::sin(time * 2.0) * 15;
 
       armAngleLeft = -std::sin(time * 2.0) * 10;
       armAngleRight = std::sin(time * 2.0) * 10;
-    }else{
+    } else {
       legAngleRight = 0;
       legAngleLeft = 0;
 
-      armAngleLeft = 0;
+      if(!isWaving){
+        armAngleLeft = 0;
+      }
       armAngleRight = 0;
     }
   }
@@ -187,16 +204,50 @@ private:
     setFixedSize(baseWidth * characterScale, baseHeight * characterScale);
   }
 
-  void updateAI(){
-    if(state != OnGround)return;
+  void updateAI() {
+    if (state != OnGround)
+      return;
 
     decisionTimer++;
 
-    if(decisionTimer >= decisionInterval){
+    if (decisionTimer >= decisionInterval) {
       decisionTimer = 0;
 
-      walkDirection = (std::rand() % 3) -1;
+      walkDirection = (std::rand() % 3) - 1;
       xVelocity = walkDirection * walkSpeed;
+    }
+  }
+
+  void updateIdleGestures() {
+    if (state != OnGround || walkDirection != 0)
+      return;
+
+    if (isWaving)
+      return;
+
+    if (waveCoolDown > 0) {
+      waveCoolDown--;
+      return;
+    }
+
+    int chance = std::rand() % 200;
+    if (chance == 0) {
+      isWaving = true;
+      waveTimer = 0;
+    }
+  }
+  void updateWaveAnimation() {
+    if (!isWaving)
+      return;
+
+    waveTimer++;
+
+    armAngleLeft = 115 + std::sin(waveTimer * 0.5) * 25;
+
+    if (waveTimer >= waveDuration) {
+      isWaving = false;
+      waveCoolDown = waveCoolDownMax;
+      armAngleLeft = 0;
     }
   }
 
@@ -206,8 +257,12 @@ protected:
     if (event->button() == Qt::LeftButton) {
       isDragging = true;
       state = Dragged;
+      isWaving = false;
+      waveCoolDown = waveCoolDownMax;
       xVelocity = 0;
       yVelocity = 0;
+
+      dragOffset = event->globalPosition().toPoint() - frameGeometry().topLeft();
     }
   }
 
@@ -217,7 +272,7 @@ protected:
     }
   }
 
-  void mouseReleaseEvent(QMouseEvent *) override { 
+  void mouseReleaseEvent(QMouseEvent *) override {
     isDragging = false;
     state = Falling;
   }
@@ -250,7 +305,6 @@ protected:
     QAction *thinArms = menu.addAction("Thin Arms");
     QAction *thickArms = menu.addAction("Thick Arms");
     QAction *redArms = menu.addAction("Red Arms");
-    
 
     connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
 
@@ -259,9 +313,17 @@ protected:
     connect(redArms, &QAction::triggered, this,
             [&]() { armColor = QColor(180, 60, 60); });
 
-    
-
     menu.exec(event->globalPos());
+  }
+
+  void keyPressEvent(QKeyEvent *event) override {
+    if(event->key() == Qt::Key_W){
+      if(!isWaving && state == OnGround && walkDirection == 0){
+        isWaving = true;
+        waveTimer = 0;
+        waveCoolDown = waveCoolDownMax;
+      }
+    }
   }
 
   // Rendering
