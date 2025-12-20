@@ -162,12 +162,21 @@ private:
     if(state == Dragged){
       legAngleLeft = 0;
       legAngleRight = 0;
+
+      armAngleRight = 0;
+      armAngleLeft = 0;
     }else if(state == OnGround && walkDirection != 0){
       legAngleLeft = -std::sin(time * 2.0) * 15;
       legAngleRight = std::sin(time * 2.0) * 15;
+
+      armAngleLeft = -std::sin(time * 2.0) * 10;
+      armAngleRight = std::sin(time * 2.0) * 10;
     }else{
       legAngleRight = 0;
       legAngleLeft = 0;
+
+      armAngleLeft = 0;
+      armAngleRight = 0;
     }
   }
 
