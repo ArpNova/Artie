@@ -30,7 +30,7 @@ private:
   // Horizontal Movement
   int xVelocity = 0;
   int walkDirection = 0;
-  int walkSpeed = 2;
+  double walkSpeed = 0.0;
 
   // AI Timing
   int decisionTimer = 0;
@@ -214,7 +214,13 @@ private:
       decisionTimer = 0;
 
       walkDirection = (std::rand() % 3) - 1;
-      xVelocity = walkDirection * walkSpeed;
+      
+      if(walkDirection == 0){
+        xVelocity = 0;
+      }else{
+        walkSpeed = 1.0 + (std::rand() % 300) / 100.0;
+        xVelocity = walkDirection * walkSpeed;
+      }
     }
   }
 
