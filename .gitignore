@@ -1,9 +1,2 @@
-.qt
 build
-CMakeFiles
-*.cmake
-CMakeCache.txt
-Makefile
-MyMate
 .cache
-assets
