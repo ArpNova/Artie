@@ -14,6 +14,15 @@ Artie is more than just a static image; he's a lively character with his own beh
     *   **Gestures**: Press `W` to make him wave at you!
 *   **Always on Top**: He stays visible over your other windows, keeping you company while you work.
 
+## 💻 System Requirements
+
+**Note: This application is designed specifically for X11 environments.**
+
+Artie relies on advanced window management features (absolute positioning, "always on top" behavior, and transparent overlays) that are standard in X11 but may be restricted or behave differently on Wayland compositors due to security protocols.
+
+*   **Recommended**: X11 Display Server
+
+
 ## 🛠️ Prerequisites
 
 To build Artie, you will need the following installed:
