@@ -8,10 +8,10 @@ artie::artie(QWidget *parent) : QWidget(parent) {
   setFocusPolicy(Qt::StrongFocus);
   setFocus();
 
-  bodySprite.load("./assets/body.png");
-  headSprite.load("./assets/head.png");
-  armSprite.load("./assets/arm.png");
-  legSprite.load("./assets/arm.png");
+  bodySprite.load("../assets/body.png");
+  headSprite.load("../assets/head.png");
+  armSprite.load("../assets/arm.png");
+  legSprite.load("../assets/arm.png");
 
   baseWindowWidth = armSprite.height() * 1.5;
   baseWindowheight =
