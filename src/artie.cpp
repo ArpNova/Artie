@@ -219,7 +219,7 @@ void artie::contextMenuEvent(QContextMenuEvent *event) {
 
   QAction *thinArms = menu.addAction("Thin Arms");
   QAction *thickArms = menu.addAction("Thick Arms");
-  QAction *redArms = menu.addAction("Red Arms");
+  QAction *redArms = menu.addAction("Red Artie");
 
   connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
   connect(thickArms, &QAction::triggered, this, [&]() { armScaleX = 1.3; });
