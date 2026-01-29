@@ -81,7 +81,7 @@ private:
   // Arm appearance
   double armScaleX = 0.8;
   double armScaleY = 0.54;
-  QColor armColor = QColor(220, 180, 140);
+  QColor armColor = QColor(100, 149, 237);
 
   // leg appearence
   double legScaleX = 0.8;
