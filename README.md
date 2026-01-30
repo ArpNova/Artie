@@ -2,7 +2,10 @@
 
 A delightful, interactive desktop companion that lives on your screen. Built with C++ and Qt 6.
 
-## 🌟 Features
+## Project Demo
+![Project Walkthrough](assets/demo.gif)
+
+## Features
 
 Artie is more than just a static image; he's a lively character with his own behaviors:
 
@@ -14,7 +17,7 @@ Artie is more than just a static image; he's a lively character with his own beh
     *   **Gestures**: Press `W` to make him wave at you!
 *   **Always on Top**: He stays visible over your other windows, keeping you company while you work.
 
-## 💻 System Requirements
+## System Requirements
 
 **Note: This application is designed specifically for X11 environments.**
 
@@ -23,7 +26,7 @@ Artie relies on advanced window management features (absolute positioning, "alwa
 *   **Recommended**: X11 Display Server
 
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 To build Artie, you will need the following installed:
 
@@ -31,7 +34,7 @@ To build Artie, you will need the following installed:
 *   **CMake** (Version 3.16 or higher)
 *   **Qt 6** (specifically the `Widgets` component)
 
-## 📥 Installation & Build
+## Installation & Build
 
 1.  **Clone the repository:**
     ```bash
@@ -55,7 +58,7 @@ To build Artie, you will need the following installed:
     make
     ```
 
-## 🚀 Usage
+## Usage
 
 After building, run the executable from the `build` directory:
 
@@ -72,16 +75,16 @@ After building, run the executable from the `build` directory:
 | **Wave** | Press `W` key |
 | **Exit** | Close the terminal or kill the process (Context menu exit coming soon) |
 
-## 📁 Project Structure
+## Project Structure
 
 *   `src/`: Source files (`main.cpp`, `artie.cpp`)
 *   `include/`: Header files (`artie.h`)
 *   `assets/`: Image resources for the character body parts.
 
-## 🤝 Contributing
+## Contributing
 
 Feel free to fork the project and submit pull requests for new animations, outfits, or smarter AI behaviors!
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
