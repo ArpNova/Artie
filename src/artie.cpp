@@ -18,6 +18,8 @@ artie::artie(QWidget *parent) : QWidget(parent) {
       legSprite.height() + bodySprite.height() + headSprite.height() - 1.5;
   setFixedSize(baseWindowWidth, baseWindowheight);
 
+  updateSpriteCache();
+
   timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, &artie::tick);
   timer->start(30);
@@ -78,6 +80,11 @@ void artie::applyPhysics() {
   }
 
   move(x(), nextY);
+}
+
+void artie::updateSpriteCache(){
+  cachedBody = tintPixmap(bodySprite, armColor);
+  cachedArm = tintPixmap(armSprite, armColor);
 }
 
 void artie::updateAnimation() {
@@ -219,12 +226,15 @@ void artie::contextMenuEvent(QContextMenuEvent *event) {
 
   QAction *thinArms = menu.addAction("Thin Arms");
   QAction *thickArms = menu.addAction("Thick Arms");
-  QAction *redArms = menu.addAction("Red Artie");
+  QAction *redArtie = menu.addAction("Red Artie");
 
   connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
   connect(thickArms, &QAction::triggered, this, [&]() { armScaleX = 1.3; });
-  connect(redArms, &QAction::triggered, this,
-          [&]() { armColor = QColor(180, 60, 60); });
+  connect(redArtie, &QAction::triggered, this,
+          [&]() { 
+            armColor = QColor(180, 60, 60);
+            updateSpriteCache();
+          });
 
   menu.exec(event->globalPos());
 }
@@ -256,16 +266,14 @@ void artie::paintEvent(QPaintEvent *) {
   QPoint leftHip(bodyX + bodySprite.width() * 0.45, bodyBottomY);
   QPoint rightHip(bodyX + bodySprite.width() * 0.55, bodyBottomY);
 
-  QPixmap coloredLimb = tintPixmap(armSprite, armColor);
 
-  drawLimb(painter, leftHip, legAngleRight, coloredLimb, false, legScaleX,
+  drawLimb(painter, rightHip, legAngleRight, cachedArm, false, legScaleX,
            legScaleY);
-  drawLimb(painter, leftHip, legAngleLeft, coloredLimb, true, legScaleX,
+  drawLimb(painter, leftHip, legAngleLeft, cachedArm, true, legScaleX,
            legScaleY);
 
   // Body
-  QPixmap coloredBody = tintPixmap(bodySprite, armColor);
-  painter.drawPixmap(bodyX, bodyY, coloredBody);
+  painter.drawPixmap(bodyX, bodyY, cachedBody);
 
   // Head
   int headX = bodyX + (bodySprite.width() - headSprite.width()) / 2;
@@ -273,12 +281,10 @@ void artie::paintEvent(QPaintEvent *) {
   painter.drawPixmap(headX, headY, headSprite);
 
   // Arms
-  QPixmap coloredArm = tintPixmap(armSprite, armColor);
-
-  drawArm(painter, QPoint(bodyX + 12, bodyY + 20), armAngleRight, coloredArm,
+  drawArm(painter, QPoint(bodyX + 12, bodyY + 20), armAngleRight, cachedArm,
           false);
   drawArm(painter, QPoint(bodyX + bodySprite.width() - 12, bodyY + 20),
-          armAngleLeft, coloredArm, true);
+          armAngleLeft, cachedArm, true);
 
   painter.restore();
 }

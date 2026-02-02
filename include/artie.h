@@ -70,6 +70,10 @@ private:
   QPixmap armSprite;
   QPixmap legSprite;
 
+  //Cached colored sprites
+  QPixmap cachedBody;
+  QPixmap cachedArm;
+
   // Animation state
   double time = 0.0;
   double breathOffset = 0.0;
@@ -106,6 +110,7 @@ private:
   void updateAI();
   void updateIdleGestures();
   void updateWaveAnimation();
+  void updateSpriteCache();
   void drawArm(QPainter &painter, const QPoint &shoulder, double angle,
                const QPixmap &arm, bool flip);
   void drawLimb(QPainter &painter, const QPoint &joint, double angle,
