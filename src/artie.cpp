@@ -1,6 +1,7 @@
 #include "artie.h"
 #include <QApplication>
 #include <QRandomGenerator>
+#include <qrandom.h>
 
 artie::artie(QWidget *parent) : QWidget(parent) {
   setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
@@ -132,12 +133,12 @@ void artie::updateAI() {
   if (decisionTimer >= decisionInterval) {
     decisionTimer = 0;
 
-    walkDirection = (std::rand() % 3) - 1;
+    walkDirection = QRandomGenerator::global()->bounded(3) - 1;
 
     if (walkDirection == 0) {
       xVelocity = 0;
     } else {
-      walkSpeed = 1.0 + (std::rand() % 300) / 100.0;
+      walkSpeed = 1.0 + QRandomGenerator::global()->bounded(300) / 100.0;
       xVelocity = walkDirection * walkSpeed;
     }
   }
@@ -155,7 +156,7 @@ void artie::updateIdleGestures() {
     return;
   }
 
-  int chance = std::rand() % 200;
+  int chance = QRandomGenerator::global()->bounded(200);
   if (chance == 0) {
     isWaving = true;
     waveTimer = 0;
