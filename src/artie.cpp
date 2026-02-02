@@ -83,9 +83,9 @@ void artie::applyPhysics() {
   move(x(), nextY);
 }
 
-void artie::updateSpriteCache(){
-  cachedBody = tintPixmap(bodySprite, armColor);
-  cachedArm = tintPixmap(armSprite, armColor);
+void artie::updateSpriteCache() {
+  cachedBody = tintPixmap(bodySprite, skinColor);
+  cachedArm = tintPixmap(armSprite, skinColor);
 }
 
 void artie::updateAnimation() {
@@ -231,11 +231,10 @@ void artie::contextMenuEvent(QContextMenuEvent *event) {
 
   connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
   connect(thickArms, &QAction::triggered, this, [&]() { armScaleX = 1.3; });
-  connect(redArtie, &QAction::triggered, this,
-          [&]() { 
-            armColor = QColor(180, 60, 60);
-            updateSpriteCache();
-          });
+  connect(redArtie, &QAction::triggered, this, [&]() {
+    skinColor = QColor(180, 60, 60);
+    updateSpriteCache();
+  });
 
   menu.exec(event->globalPos());
 }
@@ -266,7 +265,6 @@ void artie::paintEvent(QPaintEvent *) {
   // LEG JOINTS
   QPoint leftHip(bodyX + bodySprite.width() * 0.45, bodyBottomY);
   QPoint rightHip(bodyX + bodySprite.width() * 0.55, bodyBottomY);
-
 
   drawLimb(painter, rightHip, legAngleRight, cachedArm, false, legScaleX,
            legScaleY);

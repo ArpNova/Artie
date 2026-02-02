@@ -70,7 +70,7 @@ private:
   QPixmap armSprite;
   QPixmap legSprite;
 
-  //Cached colored sprites
+  // Cached colored sprites
   QPixmap cachedBody;
   QPixmap cachedArm;
 
@@ -85,12 +85,13 @@ private:
   // Arm appearance
   double armScaleX = 0.8;
   double armScaleY = 0.54;
-  QColor armColor = QColor(100, 149, 237);
+
+  // Skin color
+  QColor skinColor = QColor(100, 149, 237);
 
   // leg appearence
   double legScaleX = 0.8;
   double legScaleY = 0.6;
-  QColor legColor = QColor(220, 180, 140);
 
   // Physics
   int yVelocity = 0;
