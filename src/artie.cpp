@@ -1,6 +1,8 @@
 #include "artie.h"
 #include <QApplication>
 #include <QRandomGenerator>
+#include <qaction.h>
+#include <qcolor.h>
 #include <qrandom.h>
 
 artie::artie(QWidget *parent) : QWidget(parent) {
@@ -228,11 +230,16 @@ void artie::contextMenuEvent(QContextMenuEvent *event) {
   QAction *thinArms = menu.addAction("Thin Arms");
   QAction *thickArms = menu.addAction("Thick Arms");
   QAction *redArtie = menu.addAction("Red Artie");
+  QAction *blueArtie = menu.addAction("Blue Artie");
 
   connect(thinArms, &QAction::triggered, this, [&]() { armScaleX = 0.8; });
   connect(thickArms, &QAction::triggered, this, [&]() { armScaleX = 1.3; });
   connect(redArtie, &QAction::triggered, this, [&]() {
     skinColor = QColor(180, 60, 60);
+    updateSpriteCache();
+  });
+  connect(blueArtie, &QAction::triggered, this, [&](){
+    skinColor = QColor(100, 149, 237);
     updateSpriteCache();
   });
 
