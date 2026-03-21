@@ -1,6 +1,31 @@
-# Desktop Mate (Artie)
+<div align="center">
 
-A delightful, interactive desktop companion that lives on your screen. Built with C++ and Qt 6.
+# 🤖 Desktop Mate (Artie)
+
+*A delightful, interactive desktop companion that lives on your screen.*
+
+<p>
+  <a href="https://github.com/ArpNova/Artie/stargazers"><img src="https://img.shields.io/github/stars/ArpNova/Artie?style=for-the-badge&logo=github&color=white&labelColor=white&logoColor=black" alt="Stars"></a>
+  <a href="https://github.com/ArpNova/Artie/network/members"><img src="https://img.shields.io/github/forks/ArpNova/Artie?style=for-the-badge&logo=github&color=white&labelColor=white&logoColor=black" alt="Forks"></a>
+  <a href="https://github.com/ArpNova/Artie/watchers"><img src="https://img.shields.io/github/watchers/ArpNova/Artie?style=for-the-badge&logo=github&color=white&labelColor=white&logoColor=black" alt="Watchers"></a>
+</p>
+
+<p>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-a4d037?style=for-the-badge" alt="License"></a>
+  <a href="https://isocpp.org/"><img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++"></a>
+  <a href="https://www.qt.io/"><img src="https://img.shields.io/badge/Qt_6-41CD52?style=for-the-badge&logo=qt&logoColor=white" alt="Qt 6"></a>
+  <a href="https://cmake.org/"><img src="https://img.shields.io/badge/CMake-064F8C?style=for-the-badge&logo=cmake&logoColor=white" alt="CMake"></a>
+</p>
+
+<p>
+  <a href="https://github.com/ArpNova/Artie/issues"><img src="https://img.shields.io/github/issues/ArpNova/Artie?style=for-the-badge&color=dfb317" alt="Issues"></a>
+  <a href="https://github.com/ArpNova/Artie/pulls"><img src="https://img.shields.io/github/issues-pr/ArpNova/Artie?style=for-the-badge&color=28a745" alt="Pull Requests"></a>
+  <a href="https://github.com/ArpNova/Artie/commits"><img src="https://img.shields.io/github/last-commit/ArpNova/Artie?style=for-the-badge&color=a4d037" alt="Last Commit"></a>
+</p>
+
+</div>
+
+---
 
 ## Project Demo
 ![Project Walkthrough](assets/demo.gif)
